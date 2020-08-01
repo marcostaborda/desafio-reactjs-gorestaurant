@@ -9,6 +9,7 @@ interface IFoodPlate {
   name: string;
   image: string;
   price: string;
+  price_formatted?: string;
   description: string;
   available: boolean;
 }
@@ -27,11 +28,11 @@ const Food: React.FC<IProps> = ({
   const [isAvailable, setIsAvailable] = useState(food.available);
 
   async function toggleAvailable(): Promise<void> {
-    // TODO UPDATE STATUS (available)
+    setIsAvailable(!isAvailable);
   }
 
   function setEditingFood(): void {
-    // TODO - SET THE ID OF THE CURRENT ITEM TO THE EDITING FOOD AND OPEN MODAL
+    handleEditFood(food);
   }
 
   return (
@@ -43,7 +44,7 @@ const Food: React.FC<IProps> = ({
         <h2>{food.name}</h2>
         <p>{food.description}</p>
         <p className="price">
-          R$ <b>{food.price}</b>
+          <b>{food.price_formatted}</b>
         </p>
       </section>
       <section className="footer">

@@ -11,6 +11,7 @@ interface IFoodPlate {
   name: string;
   image: string;
   price: string;
+  price_formatted?: string;
   description: string;
   available: boolean;
 }
@@ -37,7 +38,8 @@ const ModalAddFood: React.FC<IModalProps> = ({
 
   const handleSubmit = useCallback(
     async (data: ICreateFoodData) => {
-      // TODO ADD A NEW FOOD AND CLOSE THE MODAL
+      handleAddFood(data);
+      setIsOpen();
     },
     [handleAddFood, setIsOpen],
   );

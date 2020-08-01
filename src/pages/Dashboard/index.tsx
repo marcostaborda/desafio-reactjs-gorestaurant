@@ -15,6 +15,7 @@ interface IFoodPlate {
   name: string;
   image: string;
   price: string;
+  price_formatted?: string;
   description: string;
   available: boolean;
 }
@@ -27,7 +28,17 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     async function loadFoods(): Promise<void> {
-      // TODO LOAD FOODS
+      const response = await api.get<IFoodPlate[]>('/foods');
+      const foodsFormatted = response.data.map(food => {
+        return {
+          ...food,
+          price_formatted: Number(food.price).toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+          }),
+        };
+      });
+      setFoods(foodsFormatted);
     }
 
     loadFoods();
@@ -37,7 +48,18 @@ const Dashboard: React.FC = () => {
     food: Omit<IFoodPlate, 'id' | 'available'>,
   ): Promise<void> {
     try {
-      // TODO ADD A NEW FOOD PLATE TO THE API
+      const addFood = { ...food, available: true };
+      const foodResponse = await api.post('/foods', addFood);
+      setFoods([
+        ...foods,
+        {
+          ...foodResponse.data,
+          price_formatted: Number(food.price).toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+          }),
+        },
+      ]);
     } catch (err) {
       console.log(err);
     }
@@ -46,11 +68,36 @@ const Dashboard: React.FC = () => {
   async function handleUpdateFood(
     food: Omit<IFoodPlate, 'id' | 'available'>,
   ): Promise<void> {
-    // TODO UPDATE A FOOD PLATE ON THE API
+    const foodEdited = { ...food, available: editingFood.available };
+
+    await api.put(`/foods/${editingFood.id}`, foodEdited);
+
+    const updatedFoods = foods.map(foodItem => {
+      const isFoodUpdate = foodItem.id === editingFood.id;
+
+      if (isFoodUpdate) {
+        const formattedFood = {
+          ...food,
+          price_formatted: Number(food.price).toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+          }),
+        };
+
+        return { ...editingFood, ...formattedFood };
+      }
+
+      return foodItem;
+    });
+
+    setFoods(updatedFoods);
   }
 
   async function handleDeleteFood(id: number): Promise<void> {
-    // TODO DELETE A FOOD PLATE FROM THE API
+    await api.delete(`/foods/${id}`);
+    const deletedFoods = foods.filter(food => food.id !== id);
+
+    setFoods(deletedFoods);
   }
 
   function toggleModal(): void {
@@ -62,7 +109,10 @@ const Dashboard: React.FC = () => {
   }
 
   function handleEditFood(food: IFoodPlate): void {
-    // TODO SET THE CURRENT EDITING FOOD ID IN THE STATE
+    const foodEditing = { ...food, price: food.price };
+
+    setEditingFood(foodEditing);
+    toggleEditModal();
   }
 
   return (
